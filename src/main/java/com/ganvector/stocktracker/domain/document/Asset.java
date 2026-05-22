@@ -27,6 +27,10 @@ public class Asset {
 
     private String name;
 
+    private String companyName;
+
+    private String cnpj;
+
     private AssetType type;
 
     private String currency;
@@ -34,6 +38,10 @@ public class Asset {
     private String logoUrl;
 
     private BigDecimal currentPrice;
+
+    private BigDecimal dividendYield;
+
+    private BigDecimal lastDividendValue;
 
     private int totalQuantity;
 
