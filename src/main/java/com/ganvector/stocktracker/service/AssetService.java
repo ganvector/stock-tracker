@@ -2,7 +2,7 @@ package com.ganvector.stocktracker.service;
 
 import com.ganvector.stocktracker.domain.document.Asset;
 import com.ganvector.stocktracker.domain.enums.AssetType;
-import com.ganvector.stocktracker.dto.response.BrapiQuoteResponse.BrapiQuoteResult;
+import com.ganvector.stocktracker.dto.response.AssetQuoteData;
 import com.ganvector.stocktracker.exception.AssetAlreadyRegisteredException;
 import com.ganvector.stocktracker.exception.AssetNotFoundException;
 import com.ganvector.stocktracker.repository.AssetRepository;
@@ -20,7 +20,7 @@ import java.util.List;
 public class AssetService {
 
     private final AssetRepository assetRepository;
-    private final BrapiService brapiService;
+    private final MarketDataAggregator marketDataAggregator;
 
     public Asset registerAsset(String ticker) {
         String normalizedTicker = ticker.toUpperCase().trim();
@@ -29,17 +29,21 @@ public class AssetService {
             throw new AssetAlreadyRegisteredException(normalizedTicker);
         }
 
-        BrapiQuoteResult quote = brapiService.fetchQuote(normalizedTicker);
+        AssetQuoteData quote = marketDataAggregator.fetchQuote(normalizedTicker);
 
         AssetType type = classifyAsset(normalizedTicker);
 
         Asset asset = Asset.builder()
                 .ticker(normalizedTicker)
-                .name(quote.longName() != null ? quote.longName() : quote.shortName())
+                .name(quote.getLongName() != null ? quote.getLongName() : quote.getShortName())
+                .companyName(quote.getCompanyName())
+                .cnpj(quote.getCnpj())
                 .type(type)
-                .currency(quote.currency())
-                .logoUrl(quote.logourl())
-                .currentPrice(quote.regularMarketPrice())
+                .currency(quote.getCurrency())
+                .logoUrl(quote.getLogoUrl())
+                .currentPrice(quote.getRegularMarketPrice())
+                .dividendYield(quote.getDividendYield())
+                .lastDividendValue(quote.getLastDividendValue())
                 .totalQuantity(0)
                 .averagePrice(BigDecimal.ZERO)
                 .createdAt(LocalDateTime.now())
